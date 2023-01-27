@@ -43,6 +43,7 @@ grans = ms / float(frag_duration)
 
 # make a temp dir to store grans
 if not os.path.exists('grans'): os.mkdir('grans')
+if not os.path.exists('output'): os.mkdir('output')
 
 for i in range(int(grans)):
     # get string for start time
@@ -73,7 +74,7 @@ for i in range(len(wavs)):
     
 
 # concat them 
-cmd = "ffmpeg -f concat -safe 0 -i files.txt -c copy stitched_"+str(frag_duration)+"_"+str(int(time.time()))+".wav && rm files.txt && rm -rf grans"
+cmd = "ffmpeg -f concat -safe 0 -i files.txt -c copy output/stitched_"+str(frag_duration)+"_"+str(int(time.time()))+".wav && rm files.txt && rm -rf grans"
 
 subprocess.Popen(["bash","-c", cmd])
 
