@@ -50,15 +50,18 @@ for i in range(int(grans)):
     s = round((i * frag_duration) / 1000)
     ds = ((i * frag_duration) / 1000) % 1
     start_time = "00:00:" + str("{:02d}".format(s)) + '.' +  str(ds).split('.')[1][:2]
+    
     clip_time = str(frag_duration/1000)
     fade_time = str(frag_duration/10000)
-    fade = "afade=in:st=0:d=0."+fade_time+",afade=out:st=duration-0."+fade_time+":d=A"
-    cmd = "ffmpeg -i "+input_file+" -ss "+start_time+" -t "+clip_time + fade +  " -c copy grans/"+str(i)+".wav -loglevel quiet"
-    print(cmd)
+    fade_out_start = str(frag_duration/1000 - frag_duration/10000)
+    # afade=in:0:d=0.05,afade=out:0.45 <--works
+    fade = "-af afade=in:0:d="+fade_time+",afade=out:"+fade_out_start
+    
+    cmd = "ffmpeg -i "+input_file+" -ss "+start_time+" -t "+clip_time + " " + fade +  " grans/"+str(i)+".wav"
+    if i < 10: print(cmd)
+    else: sys.stdout.write(". ")
     subprocess.Popen(["bash","-c", cmd])
 
-    # add fade
-#    ffmpeg -i input.wav -af "afade=in:st=0:d=5,afade=out:st=duration-5:d=5" -c:a pcm_s16le output.wav
 
 
 # Now get a list of all the files we created
@@ -67,14 +70,18 @@ random.shuffle(wavs)
 
 # touch filex txt for ffmpeg to ref
 subprocess.Popen(["bash","-c", "touch files.txt"])
+print("touch files.txt")
 
 # rename the new ordered wavs
 for i in range(len(wavs)):
     subprocess.Popen(["bash","-c", "echo file grans/"+str(wavs[i])+ " >> files.txt"])
+    if (i < 10): print("added "+str(wavs[i])+" to files.txt")
+    else: sys.stdout.write(". ")
     
 
 # concat them 
 cmd = "ffmpeg -f concat -safe 0 -i files.txt -c copy output/stitched_"+str(frag_duration)+"_"+str(int(time.time()))+".wav && rm files.txt && rm -rf grans"
-
+print(cmd)
+#
 subprocess.Popen(["bash","-c", cmd])
-
+#
